@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeoSnake 2026</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="theme-dark">
+  <div class="app">
+    <header class="top-bar">
+      <div class="logo">
+        <span class="logo-dot"></span>
+        <span>NeoSnake 2026</span>
+      </div>
+      <div class="top-actions">
+        <button id="themeToggle" class="ghost">🌙 / ☀️</button>
+        <button id="soundToggle" class="ghost">🔊</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="panel left-panel">
+        <div class="card">
+          <h2>Estado</h2>
+          <div class="stats">
+            <div class="stat">
+              <span>Puntuación</span>
+              <strong id="score">0</strong>
+            </div>
+            <div class="stat">
+              <span>Récord</span>
+              <strong id="highScore">0</strong>
+            </div>
+            <div class="stat">
+              <span>Nivel</span>
+              <strong id="level">1</strong>
+            </div>
+            <div class="stat">
+              <span>Velocidad</span>
+              <strong id="speedDisplay">6</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="controlsHelp">
+          <h3>Controles</h3>
+          <ul>
+            <li>Teclado: Flechas o WASD</li>
+            <li>Pausa: Espacio / P</li>
+            <li>Reiniciar: R</li>
+            <li>Móvil: Botones en pantalla</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="game-area">
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+        <div class="mobile-controls">
+          <button data-dir="up">▲</button>
+          <div class="mobile-row">
+            <button data-dir="left">◀</button>
+            <button data-dir="down">▼</button>
+            <button data-dir="right">▶</button>
+          </div>
+        </div>
+
+        <div class="overlay" id="menuOverlay">
+          <div class="overlay-card">
+            <h1>NeoSnake</h1>
+            <p>Clásico, moderno y elegante.</p>
+            <button id="startBtn" class="primary">Iniciar partida</button>
+            <button id="optionsBtn" class="ghost">Opciones</button>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="optionsOverlay">
+          <div class="overlay-card scrollable">
+            <h2>Opciones</h2>
+            <div class="options-grid">
+              <label>
+                Velocidad inicial
+                <input type="range" id="speedRange" min="4" max="12" value="6" />
+              </label>
+              <label>
+                Tamaño del mapa
+                <select id="mapSize">
+                  <option value="14">Pequeño</option>
+                  <option value="18" selected>Mediano</option>
+                  <option value="24">Grande</option>
+                </select>
+              </label>
+              <label>
+                Skin de serpiente
+                <select id="snakeSkin">
+                  <option value="neon" selected>Neón</option>
+                  <option value="cyber">Cyber</option>
+                  <option value="nature">Nature</option>
+                </select>
+              </label>
+              <label>
+                Fondo
+                <input type="color" id="bgColor" value="#0b1220" />
+              </label>
+              <label>
+                Paredes activas
+                <input type="checkbox" id="wallsToggle" checked />
+              </label>
+              <label>
+                Modo infinito
+                <input type="checkbox" id="infiniteToggle" />
+              </label>
+              <label>
+                Dificultad
+                <select id="difficulty">
+                  <option value="relax">Relax</option>
+                  <option value="normal" selected>Normal</option>
+                  <option value="hard">Hardcore</option>
+                </select>
+              </label>
+            </div>
+            <div class="option-actions">
+              <button id="saveOptions" class="primary">Guardar</button>
+              <button id="closeOptions" class="ghost">Cerrar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="pauseOverlay">
+          <div class="overlay-card">
+            <h2>Pausa</h2>
+            <button id="resumeBtn" class="primary">Continuar</button>
+            <button id="restartBtn" class="ghost">Reiniciar</button>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="gameOverOverlay">
+          <div class="overlay-card">
+            <h2>Game Over</h2>
+            <p id="finalScore">Puntuación: 0</p>
+            <button id="playAgainBtn" class="primary">Jugar de nuevo</button>
+            <button id="backToMenuBtn" class="ghost">Menú principal</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel right-panel">
+        <div class="card">
+          <h3>Alimentos</h3>
+          <div class="food-list">
+            <div><span class="dot normal"></span>Normal (+1)</div>
+            <div><span class="dot turbo"></span>Turbo (+velocidad)</div>
+            <div><span class="dot slow"></span>Lenta (-velocidad)</div>
+            <div><span class="dot bonus"></span>Bonus (x2)</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Niveles</h3>
+          <p>Cada 5 comidas subes de nivel. En dificultades altas la velocidad escala más rápido.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

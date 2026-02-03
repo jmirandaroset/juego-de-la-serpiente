@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeoSnake 2026 - Launcher</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .launcher {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .launcher-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--shadow);
+      max-width: 520px;
+    }
+
+    .launcher-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .launcher small {
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body class="theme-dark">
+  <div class="launcher">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      <span>NeoSnake 2026</span>
+    </div>
+    <div class="launcher-card">
+      <h1>Launcher</h1>
+      <p>Elige cómo quieres entrar a la experiencia: jugar, probar o revisar controles.</p>
+      <div class="launcher-actions">
+        <a href="index.html"><button class="primary">Jugar ahora</button></a>
+        <a href="tests.html"><button class="ghost">Ejecutar pruebas</button></a>
+      </div>
+    </div>
+    <small>Tip: abre <strong>index.html</strong> si quieres saltar el launcher.</small>
+  </div>
+</body>
+</html>

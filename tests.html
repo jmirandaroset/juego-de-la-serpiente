@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeoSnake 2026 - Pruebas</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      padding: 24px;
+    }
+
+    .test-panel {
+      max-width: 720px;
+      margin: 0 auto 24px;
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .test-results {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .test-item {
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .test-item.pass {
+      border: 1px solid rgba(71, 255, 156, 0.5);
+    }
+
+    .test-item.fail {
+      border: 1px solid rgba(255, 77, 109, 0.6);
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body class="theme-dark">
+  <div class="test-panel">
+    <h1>Pruebas automáticas</h1>
+    <p>Estas pruebas validan la lógica base del juego y sus configuraciones principales.</p>
+    <div id="testSummary"></div>
+    <div id="testResults" class="test-results"></div>
+    <a href="launcher.html"><button class="ghost">Volver al launcher</button></a>
+  </div>
+
+  <div class="hidden">
+    <canvas id="gameCanvas" width="600" height="600"></canvas>
+    <div id="score"></div>
+    <div id="highScore"></div>
+    <div id="level"></div>
+    <div id="speedDisplay"></div>
+    <div id="finalScore"></div>
+    <div id="menuOverlay"></div>
+    <div id="optionsOverlay"></div>
+    <div id="pauseOverlay"></div>
+    <div id="gameOverOverlay"></div>
+    <button id="startBtn"></button>
+    <button id="optionsBtn"></button>
+    <button id="saveOptions"></button>
+    <button id="closeOptions"></button>
+    <button id="resumeBtn"></button>
+    <button id="restartBtn"></button>
+    <button id="playAgainBtn"></button>
+    <button id="backToMenuBtn"></button>
+    <input id="speedRange" value="6" />
+    <select id="mapSize">
+      <option value="18" selected></option>
+    </select>
+    <select id="snakeSkin">
+      <option value="neon" selected></option>
+    </select>
+    <input id="bgColor" value="#0b1220" />
+    <input id="wallsToggle" type="checkbox" checked />
+    <input id="infiniteToggle" type="checkbox" />
+    <select id="difficulty">
+      <option value="normal" selected></option>
+    </select>
+    <button id="themeToggle"></button>
+    <button id="soundToggle"></button>
+    <div class="mobile-controls">
+      <button data-dir="up"></button>
+      <button data-dir="down"></button>
+      <button data-dir="left"></button>
+      <button data-dir="right"></button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="tests.js"></script>
+</body>
+</html>
