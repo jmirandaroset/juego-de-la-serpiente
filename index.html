@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estrategia RTS - Duelo de Torres</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: "Segoe UI", sans-serif;
+      height: 100%;
+    }
+    #game-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+    canvas {
+      border: 2px solid #1e293b;
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container"></div>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+  <script>
+    const config = {
+      type: Phaser.AUTO,
+      width: 960,
+      height: 640,
+      parent: "game-container",
+      backgroundColor: "#0f172a",
+      physics: {
+        default: "arcade",
+        arcade: {
+          debug: false
+        }
+      },
+      scene: {
+        preload() {},
+        create,
+        update
+      }
+    };
+
+    const gameState = {
+      elixir: 5,
+      elixirMax: 10,
+      elixirRegen: 0.03,
+      selectedCard: null,
+      towers: [],
+      ui: {}
+    };
+
+    const unitStats = {
+      tank: { cost: 4, hp: 140, speed: 40, range: 26, damage: 14, color: 0x38bdf8 },
+      warrior: { cost: 3, hp: 90, speed: 60, range: 22, damage: 18, color: 0xf97316 },
+      archer: { cost: 2, hp: 60, speed: 70, range: 90, damage: 10, color: 0x22c55e }
+    };
+
+    const cardDeck = [
+      { id: "tank", label: "Tanque", shape: "circle" },
+      { id: "warrior", label: "Guerrero", shape: "square" },
+      { id: "archer", label: "Arquero", shape: "triangle" },
+      { id: "archer", label: "Arquero+", shape: "triangle" }
+    ];
+
+    const game = new Phaser.Game(config);
+
+    function create() {
+      const { width, height } = this.scale;
+      this.playerUnits = this.physics.add.group();
+      this.enemyUnits = this.physics.add.group();
+      this.lastAiSpawn = 0;
+
+      drawBattlefield(this, width, height);
+      createTowers(this, width, height);
+      createUI(this, width, height);
+
+      this.input.on("pointerdown", (pointer) => {
+        if (!gameState.selectedCard) return;
+        if (pointer.y < height * 0.55) return;
+        const unitType = gameState.selectedCard;
+        const stats = unitStats[unitType];
+        if (gameState.elixir < stats.cost) return;
+        spawnUnit(this, pointer.x, pointer.y, unitType, "player");
+        gameState.elixir -= stats.cost;
+        updateElixirText();
+      });
+    }
+
+    function update(time, delta) {
+      gameState.elixir = Math.min(gameState.elixirMax, gameState.elixir + gameState.elixirRegen * delta);
+      updateElixirText();
+
+      this.lastAiSpawn += delta;
+      if (this.lastAiSpawn > 2400) {
+        this.lastAiSpawn = 0;
+        const laneX = Phaser.Math.Between(200, 760);
+        const types = ["tank", "warrior", "archer"];
+        const type = Phaser.Utils.Array.GetRandom(types);
+        spawnUnit(this, laneX, 110, type, "enemy");
+      }
+
+      handleUnits(this.playerUnits, "enemy");
+      handleUnits(this.enemyUnits, "player");
+    }
+
+    function drawBattlefield(scene, width, height) {
+      const graphics = scene.add.graphics();
+      graphics.fillStyle(0x1e293b, 1);
+      graphics.fillRect(40, 70, width - 80, height - 140);
+      graphics.lineStyle(4, 0x334155, 1);
+      graphics.strokeRect(40, 70, width - 80, height - 140);
+      graphics.lineStyle(2, 0x475569, 1);
+      graphics.lineBetween(60, height / 2, width - 60, height / 2);
+      graphics.lineBetween(width / 3, 70, width / 3, height - 70);
+      graphics.lineBetween((2 * width) / 3, 70, (2 * width) / 3, height - 70);
+    }
+
+    function createTowers(scene, width, height) {
+      const positions = [
+        { x: width / 2, y: height - 100, team: "player" },
+        { x: width / 4, y: height - 140, team: "player" },
+        { x: (3 * width) / 4, y: height - 140, team: "player" },
+        { x: width / 2, y: 100, team: "enemy" },
+        { x: width / 4, y: 140, team: "enemy" },
+        { x: (3 * width) / 4, y: 140, team: "enemy" }
+      ];
+
+      positions.forEach((pos) => {
+        const tower = scene.add.rectangle(pos.x, pos.y, 70, 90, pos.team === "player" ? 0x60a5fa : 0xf87171);
+        tower.setStrokeStyle(3, 0x0f172a);
+        tower.hp = 250;
+        tower.team = pos.team;
+        tower.maxHp = 250;
+        const hpBar = scene.add.rectangle(pos.x, pos.y - 60, 70, 8, 0x22c55e);
+        tower.hpBar = hpBar;
+        gameState.towers.push(tower);
+      });
+    }
+
+    function createUI(scene, width, height) {
+      gameState.ui.elixirText = scene.add.text(30, height - 40, "Elixir: 5", {
+        fontSize: "20px",
+        color: "#e2e8f0",
+        fontStyle: "bold"
+      });
+
+      const startX = 220;
+      const spacing = 150;
+      cardDeck.forEach((card, index) => {
+        const baseX = startX + index * spacing;
+        const container = scene.add.rectangle(baseX, height - 40, 120, 60, 0x334155);
+        const label = scene.add.text(baseX - 50, height - 60, card.label, {
+          fontSize: "16px",
+          color: "#e2e8f0"
+        });
+        const cost = unitStats[card.id].cost;
+        const costText = scene.add.text(baseX - 50, height - 38, `Costo: ${cost}`, {
+          fontSize: "14px",
+          color: "#94a3b8"
+        });
+        container.setInteractive({ useHandCursor: true });
+        container.on("pointerdown", () => {
+          gameState.selectedCard = card.id;
+          highlightSelected(card.id);
+        });
+        gameState.ui[`card${index}`] = { container, label, costText, id: card.id };
+      });
+    }
+
+    function highlightSelected(id) {
+      Object.values(gameState.ui).forEach((entry) => {
+        if (!entry.container) return;
+        const active = entry.id === id;
+        entry.container.setFillStyle(active ? 0x6366f1 : 0x334155);
+      });
+    }
+
+    function updateElixirText() {
+      if (gameState.ui.elixirText) {
+        gameState.ui.elixirText.setText(`Elixir: ${gameState.elixir.toFixed(1)}`);
+      }
+    }
+
+    function spawnUnit(scene, x, y, type, team) {
+      const stats = unitStats[type];
+      let unitShape;
+      if (type === "tank") {
+        unitShape = scene.add.circle(x, y, 18, stats.color);
+      } else if (type === "warrior") {
+        unitShape = scene.add.rectangle(x, y, 28, 28, stats.color);
+      } else {
+        unitShape = scene.add.triangle(x, y, 0, 30, 15, 0, 30, 30, stats.color);
+      }
+      scene.physics.add.existing(unitShape);
+      unitShape.body.setCircle(18);
+      unitShape.team = team;
+      unitShape.hp = stats.hp;
+      unitShape.maxHp = stats.hp;
+      unitShape.speed = stats.speed;
+      unitShape.range = stats.range;
+      unitShape.damage = stats.damage;
+      unitShape.type = type;
+      unitShape.lastAttack = 0;
+
+      const hpBar = scene.add.rectangle(x, y - 24, 30, 5, 0x22c55e);
+      unitShape.hpBar = hpBar;
+
+      if (team === "player") {
+        scene.playerUnits.add(unitShape);
+      } else {
+        scene.enemyUnits.add(unitShape);
+      }
+    }
+
+    function handleUnits(group, targetTeam) {
+      group.getChildren().forEach((unit) => {
+        if (unit.hp <= 0) {
+          unit.hpBar.destroy();
+          unit.destroy();
+          return;
+        }
+        const target = getClosestTower(unit, targetTeam);
+        if (!target) return;
+        const distance = Phaser.Math.Distance.Between(unit.x, unit.y, target.x, target.y);
+        if (distance > unit.range) {
+          moveTowards(unit, target, unit.speed);
+        } else {
+          unit.body.setVelocity(0, 0);
+          if (game.loop.now - unit.lastAttack > 600) {
+            unit.lastAttack = game.loop.now;
+            target.hp -= unit.damage;
+            updateTowerHp(target);
+            if (target.hp <= 0) {
+              target.hpBar.setFillStyle(0x475569);
+              target.destroy();
+            }
+          }
+        }
+        updateUnitHp(unit);
+      });
+    }
+
+    function moveTowards(unit, target, speed) {
+      const angle = Phaser.Math.Angle.Between(unit.x, unit.y, target.x, target.y);
+      unit.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+    }
+
+    function getClosestTower(unit, team) {
+      const towers = gameState.towers.filter((tower) => tower.team === team && tower.active !== false);
+      if (!towers.length) return null;
+      let closest = towers[0];
+      let minDist = Phaser.Math.Distance.Between(unit.x, unit.y, closest.x, closest.y);
+      towers.forEach((tower) => {
+        const dist = Phaser.Math.Distance.Between(unit.x, unit.y, tower.x, tower.y);
+        if (dist < minDist) {
+          minDist = dist;
+          closest = tower;
+        }
+      });
+      return closest;
+    }
+
+    function updateUnitHp(unit) {
+      const ratio = Phaser.Math.Clamp(unit.hp / unit.maxHp, 0, 1);
+      unit.hpBar.width = 30 * ratio;
+      unit.hpBar.setPosition(unit.x - (30 - unit.hpBar.width) / 2, unit.y - 24);
+    }
+
+    function updateTowerHp(tower) {
+      const ratio = Phaser.Math.Clamp(tower.hp / tower.maxHp, 0, 1);
+      tower.hpBar.width = 70 * ratio;
+      tower.hpBar.setPosition(tower.x - (70 - tower.hpBar.width) / 2, tower.y - 60);
+    }
+  </script>
+</body>
+</html>
